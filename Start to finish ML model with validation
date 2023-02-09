@@ -1,0 +1,44 @@
+#import packages.
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error as MSE
+
+#Read CSV
+heights = pd.read_csv('/content/heights.csv')
+
+#create feature matrix (IV) and target vector(DV).
+X = heights [['Mother','Father','Gender']]
+y = heights['Height']
+
+#One hot encode gender variable.
+one_hot = pd.get_dummies(data=X, columns=['Gender'])
+print(one_hot)#inspect
+#save as data frame.
+X = pd.DataFrame(one_hot)
+
+# split your data into a training&validation set and a test set with 25% of the records.
+X_train_val,X_test,y_train_val,y_test = train_test_split(X,y,test_size =0.25,random_state = 42)
+
+#further split the data into three sets by seperating the Training & validation set.
+X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val,test_size = 0.3333,random_state = 42)
+
+#Create model with training data.
+reg = LinearRegression()
+model = reg.fit(X_train, y_train)
+
+#Get predicted y values plus y values for a validation set.
+y_pred = model.predict(X_train)
+y_pred_val = model.predict(X_val)
+
+#Fit the model with training data on predicted y.
+RMSE_train = MSE(y_train, y_pred, squared = False)
+r2_train = r2_score(y_train, y_pred)
+print(RMSE_train)
+print(r2_train)
+
+#Validated the model with the validation set. 
+RMSE_val = MSE(y_val, y_pred_val, squared = False)
+r2_val = r2_score(y_val, y_pred_val)
+print(RMSE_val)
+print(r2_val)
