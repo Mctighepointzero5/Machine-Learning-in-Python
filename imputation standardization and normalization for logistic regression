@@ -1,0 +1,41 @@
+#import packages.
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+#readcsv.
+cancer = pd.read_csv('/content/cancer.csv')
+cancer.head()
+
+#dummycode outcome variable.
+cancer.loc[cancer['diagnosis'] == 'M', 'cancer_present'] = 1
+cancer.loc[cancer['diagnosis'] == 'B', 'cancer_present'] = 0
+
+#Split data into predictors and criterion.
+X = cancer[['perimeter_mean','radius_mean','texture_mean','area_mean','smoothness_mean','compactness_mean','concavity_mean','concave points_mean','symmetry_mean','fractal_dimension_mean']]
+y = cancer['cancer_present']
+
+#train test split.
+X_train_val,X_test,y_train_val,y_test = train_test_split(X,y,test_size =0.25,random_state = 42)
+X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val,test_size = 0.3333,random_state = 42)
+
+#mean imputation of missing values.
+from pandas.core.groupby.groupby import DataFrame
+imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean') 
+X_train_ = imp_mean.fit_transform(X_train)
+X_train = pd.DataFrame(X_train_)
+X_train.isna()
+
+#Standardize so mean = 0 and SD =1.
+std = StandardScaler() 
+X_train_std_ = std.fit_transform(X_train)
+X_train_std = pd.DataFrame(X_train_std_)
+print(round(X_train_std.describe(),2)) 
+
+#Normalize the data so min = 0 and max =1.
+norm = MinMaxScaler().fit(X_train)
+X_train_norm_ = norm.transform(X_train) 
+X_train_norm = pd.DataFrame(X_train_norm_)
+print(round(X_train_norm.describe(),2))
