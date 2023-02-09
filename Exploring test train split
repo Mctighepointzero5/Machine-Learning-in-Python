@@ -1,0 +1,27 @@
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+heights = pd.read_csv('/content/heights.csv')
+heights.head
+
+#First explore how many observations are in the data.
+print(heights.shape)
+
+#Next, create your feature matrix and target vector.
+X = heights[['MidParent']]
+y = heights[['Height']]
+
+# split your data into a training&validation set and a test set with 25% of the records.
+X_train_val,X_test,y_train_val,y_test = train_test_split(X,y,test_size =0.25,random_state = 42)
+
+#See if that values equal the original number of values.
+print(X_train_val.shape)
+print(X_test.shape)
+
+#further split the data into three sets by seperating the Training & validation set.
+X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val,test_size = 0.3333,random_state = 42)
+
+#Obsesrve how these add up to the count of the values in the testsing&validation set.
+print(X_train.shape)
+print(X_val.shape)
