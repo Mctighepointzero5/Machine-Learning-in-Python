@@ -1,0 +1,58 @@
+#import packages.
+import pandas as pd
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error as MSE
+from sklearn.linear_model import LogisticRegression
+
+#read csv.
+cancer = pd.read_csv('/content/cancer.csv')
+cancer.head()
+print(cancer.shape)
+
+#Dummy code for y variable.
+cancer.loc[cancer['diagnosis'] == 'M', 'cancer_present'] = 1
+cancer.loc[cancer['diagnosis'] == 'B', 'cancer_present'] = 0
+
+#inspect distrobution.
+sns.lmplot('perimeter_mean', 'cancer_present', data=cancer)
+
+#create x and y variables.
+X = cancer[['perimeter_mean']]
+y = cancer['cancer_present']
+
+#test train split. 
+X_train_val,X_test,y_train_val,y_test = train_test_split(X,y,test_size =0.25,random_state = 42)
+X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val,test_size = 0.3333,random_state = 42)
+
+#create and fit model.
+log_reg =LogisticRegression(random_state = 0)
+log_reg_model = log_reg.fit(X_train,y_train)
+
+#Get probabilities. 
+probs_ = log_reg_model.predict_proba(X_train)
+probs = pd.DataFrame(probs_)
+print(probs)
+
+#get accuracy.
+accuracy = log_reg_model.score(X_train,y_train) 
+print(accuracy)
+
+#calculate predicted probabilities.
+probs_ = log_reg_model.predict_proba(X_train)
+probs = pd.DataFrame(probs_)
+print(probs)
+
+#Calculate predicted class.
+classes = log_reg_model.predict(X_train)
+print(classes)
+
+#Create data frame of predicted class.
+classes = pd.DataFrame(classes)
+
+#Compare the predicted probabilities of a tumor being benign or malignant with its predicted classificiation.
+X_train.reset_index(inplace=True
+predicted = pd.concat([X_train, probs[1], classes], axis=1)
+predicted.rename({1: 'prob_malignant', 0:'classification'}, axis=1, inplace=True)
+sns.lmplot('perimeter_mean', 'prob_malignant', data=predicted, hue ='classification', fit_reg=False)
