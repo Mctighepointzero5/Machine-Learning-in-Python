@@ -1,0 +1,37 @@
+#import packages.
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import seaborn as sns
+from statsmodels.formula.api import ols
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error as MSE
+
+#read data.
+heights = pd.read_csv("/content/heights.csv")
+
+#split data into predictor and criteion.
+X = heights[['MidParent']]#average height of both parents.
+y = heights[['Height']]#child's height.
+
+#get model fit, coeficent, intercept.
+reg = LinearRegression()
+
+model = reg.fit(X,y)
+
+print(model.score(X,y))
+print(model.coef_)
+print(model.intercept_)
+
+
+#create predicted values for y
+y_pred = model.predict(X)
+
+#calculate Root mean square error.
+RMSE = MSE(y, y_pred, squared = False)#average error in measurement 
+
+#get Rsquare
+r2 = r2_score(y,y_pred)#percent of variability accounted for by parents.
+
+#print values.
+print(RMSE)
+print(r2)
