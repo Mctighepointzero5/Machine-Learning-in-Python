@@ -1,0 +1,63 @@
+#import packages.
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_score, recall_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import cross_val_score, cross_validate
+
+#read_csv.
+cancer_full = pd.read_csv('/content/cancer_full.csv')
+cancer_full.head()
+
+#dummy code outcome.
+cancer_full.loc[cancer_full['diagnosis'] == 'M', 'cancer_present'] = 1
+cancer_full.loc[cancer_full['diagnosis'] == 'B', 'cancer_present'] = 0
+
+#split data into predictor and criertion. Dropping noise data.
+X = cancer_full.drop(['id','diagnosis','cancer_present'], axis=1)
+y = cancer_full['cancer_present']
+
+#split into test and train group.
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size =0.25,random_state = 42)
+
+#Create a standardized pipeline with no penalty.
+pipe_std = Pipeline([
+('scaler', StandardScaler()),
+('log_reg',LogisticRegression(random_state=0, penalty = 'none',solver ='lbfgs' ))])
+pipe_std.fit(X_train, y_train)
+train_accuracy_std = pipe_std.score(X_train, y_train)
+print(train_accuracy_std)
+
+#fit using ridge regression which regularizes data. AKA brings them to a smaller scale closer to zero.
+pipe_l2 = Pipeline([
+('scaler', StandardScaler()),
+('log_reg',LogisticRegression(random_state=0, penalty = 'l2',solver ='liblinear' ))])
+pipe_l2.fit(X_train, y_train)
+train_accuracy_l2 = pipe_l2.score(X_train, y_train)
+print(train_accuracy_l2)
+
+# fit using lasso regression which does not include data that doesn't contribute to the model well. 
+pipe_l1 = Pipeline([
+('scaler', StandardScaler()),
+('log_reg',LogisticRegression(random_state=0, penalty = 'l1',solver ='liblinear' ))])
+pipe_l1.fit(X_train, y_train)
+train_accuracy_l1 = pipe_l1.score(X_train, y_train)
+print(train_accuracy_l1)
+
+#Cross validate lasso regression.
+l1_scores = cross_val_score(pipe_l1, X_train, y_train, cv=10)
+print('The mean 10-fold CV accuracy is', l1_scores.mean())
+print('The SD 10-fold CV accuracy is', l1_scores.std())
+
+#cross validate ridge regression.
+l2_scores = cross_val_score(pipe_l2, X_train, y_train, cv=10)
+print('The mean 10-fold CV accuracy is', l2_scores.mean())
+print('The SD 10-fold CV accuracy is', l2_scores.std())
+
+#Cross validate standardized model. 
+std_scores = cross_val_score(pipe_std, X_train, y_train, cv=10)
+print('The mean 10-fold CV accuracy is', std_scores.mean())
+print('The SD 10-fold CV accuracy is', std_scores.std())
