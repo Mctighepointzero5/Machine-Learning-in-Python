@@ -1,0 +1,68 @@
+#This code creates three different model types using support vector machines.
+
+#import packages.
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import cross_val_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+
+#read_csv.
+cancer = pd.read_csv('/content/cancer.csv')
+cancer.head()
+
+#Dummy code outcome variable
+cancer.loc[cancer['diagnosis'] == 'M', 'cancer_present'] = 1
+cancer.loc[cancer['diagnosis'] == 'B', 'cancer_present'] = 0
+
+#Split data into feature matrix and target vector.
+X = cancer.drop(['id','diagnosis','cancer_present'], axis=1)
+y = cancer['cancer_present']
+
+#Test train split.
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size =0.25,random_state = 42)
+
+#create a pipleine with a support vector machine with a linear kernal.
+linear = Pipeline([
+('imp_mean',SimpleImputer(missing_values=np.nan, strategy='mean')),
+('scaler', StandardScaler()),
+('support_vector', SVC(kernel='linear'))])
+
+#Fit linear model.
+linear.fit(X_train, y_train)
+train_accuracy_std = linear.score(X_train, y_train)
+print(train_accuracy_std)
+
+#cross validate linear model.
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(linear, X_train, y_train, cv=10)
+print(scores.mean())
+print(scores.std())
+
+#create a pipeline with a support vector with a polynomial kernel.
+poly = Pipeline([
+('imp_mean',SimpleImputer(missing_values=np.nan, strategy='mean')),
+('scaler', StandardScaler()),
+('support_vector', SVC(kernel='poly'))])
+
+#cross validate poly model. 
+scores = cross_val_score(poly, X_train, y_train, cv=10)
+print(scores.mean())
+print(scores.std())
+
+#Create a pipeline that uses a radial basis function.
+rbf = Pipeline([
+('imp_mean',SimpleImputer(missing_values=np.nan, strategy='mean')),
+('scaler', StandardScaler()),
+('support_vector', SVC(kernel='rbf'))])
+
+#Cross validate radial basis model.
+scores = cross_val_score(rbf, X_train, y_train, cv=10)
+print(scores.mean())
+print(scores.std())
