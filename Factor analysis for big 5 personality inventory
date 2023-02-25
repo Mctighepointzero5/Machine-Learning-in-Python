@@ -1,0 +1,47 @@
+#import packages.
+!pip install factor_analyzer
+import pandas as pd
+import numpy as np
+from factor_analyzer import FactorAnalyzer
+from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity, calculate_kmo
+
+#read CSV.
+X = pd.read_csv('/content/bfi.csv')
+X.head()
+
+#clean data.
+X.drop(['Unnamed: 0','gender', 'education', 'age'],axis = 1, inplace = True)
+X.dropna(inplace = True)
+X.head()
+
+#use Bartlett's test to see if features are related. Small p values are evidence of a relationship within data.
+chi_square_value,p_value=calculate_bartlett_sphericity(X)
+p_value
+
+#the Kaiser–Meyer–Olkin is another test of factorability with values closer to 1 are indicative of a relationship.
+kmo_all,kmo_model=calculate_kmo(X)
+kmo_model
+
+#calculate the Eigenvalues. Eigenvalues greater than 1 indicate that a factor is important in explaining the variability in the data.
+fa = FactorAnalyzer()
+fa.fit(X, 25)
+# Check Eigenvalues
+ev, v = fa.get_eigenvalues()
+print(pd.DataFrame(ev))
+
+#compute the factor loadings.
+fa = FactorAnalyzer(n_factors=6,rotation='varimax')
+fa.fit(X)Commit Summary
+Create new file
+Optional extended description
+Add an optional extended description…
+ Commit directly to the main branch.
+ Create a new branch for this commit and start a pull request. Learn more about pull requests.
+ 
+Footer
+© 2023 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+print(pd.DataFrame(fa.loadings_,index=X.columns))
